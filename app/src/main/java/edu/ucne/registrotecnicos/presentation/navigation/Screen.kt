@@ -1,4 +1,4 @@
-package edu.ucne.registrotecnicos.presentatio.navigation
+package edu.ucne.registrotecnicos.presentation.navigation
 
 import kotlinx.serialization.Serializable
 

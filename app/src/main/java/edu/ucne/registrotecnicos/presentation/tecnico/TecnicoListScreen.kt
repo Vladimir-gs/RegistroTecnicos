@@ -38,7 +38,6 @@ import edu.ucne.registrotecnicos.data.local.entity.TecnicosEntity
 import java.text.NumberFormat
 import java.util.Locale
 
-
 @Composable
 fun TecnicoListScreen(
     tecnicoDb: TecnicoDb,
@@ -77,7 +76,6 @@ fun TecnicoListScreen(
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 itemsIndexed(tecnicoList) { index, tecnico ->
                     TecnicoRow(tecnico) {
-                        // Acción de eliminación
                         tecnicoViewModel.deleteTecnico(tecnico)
                     }
                 }
@@ -91,7 +89,7 @@ private fun TecnicoRow(
     tecnico: TecnicosEntity,
     onDelete: (TecnicosEntity) -> Unit,
 ) {
-    val showDialog = remember { mutableStateOf(false) } // Estado para mostrar el diálogo de confirmación
+    val showDialog = remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
@@ -126,7 +124,7 @@ private fun TecnicoRow(
                     Icon(Icons.Filled.Edit, contentDescription = "Editar Técnico")
                 }
                 IconButton(
-                    onClick = { showDialog.value = true }, // Muestra el diálogo de confirmación
+                    onClick = { showDialog.value = true },
                 ) {
                     Icon(Icons.Filled.Delete, contentDescription = "Eliminar Técnico")
                 }
@@ -134,17 +132,16 @@ private fun TecnicoRow(
         }
     }
 
-    // El AlertDialog para confirmar la eliminación
     if (showDialog.value) {
         AlertDialog(
-            onDismissRequest = { showDialog.value = false }, // Si se toca fuera del diálogo, lo cierra
+            onDismissRequest = { showDialog.value = false },
             title = { Text("Confirmar Eliminación") },
             text = { Text("¿Estás seguro de que deseas eliminar este técnico?") },
             confirmButton = {
                 Button(
                     onClick = {
-                        onDelete(tecnico)  // Llama a la función de eliminación
-                        showDialog.value = false  // Cierra el diálogo después de la eliminación
+                        onDelete(tecnico)
+                        showDialog.value = false
                     }
                 ) {
                     Text("Eliminar")
@@ -152,7 +149,7 @@ private fun TecnicoRow(
             },
             dismissButton = {
                 Button(
-                    onClick = { showDialog.value = false } // Solo cierra el diálogo sin eliminar
+                    onClick = { showDialog.value = false }
                 ) {
                     Text("Cancelar")
                 }
@@ -170,7 +167,5 @@ fun TecnicoListScreenPreview() {
         TecnicosEntity(tecnicosId = 2, nombre = "Técnico 2", sueldo = 3000.0),
         TecnicosEntity(tecnicosId = 3, nombre = "Técnico 3", sueldo = 3500.0)
     )
-
-    // Componente simulado para la preview
     TecnicoListScreen(tecnicoList as TecnicoDb, navController)
 }
