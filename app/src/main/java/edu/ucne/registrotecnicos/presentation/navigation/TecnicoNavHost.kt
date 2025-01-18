@@ -6,7 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import edu.ucne.registrotecnicos.data.local.database.TecnicoDb
 import edu.ucne.registrotecnicos.presentation.tecnico.TecnicoListScreen
-import edu.ucne.registrotecnicos.presentatio.tecnico.TecnicoScreen
+import edu.ucne.registrotecnicos.presentation.tecnico.TecnicoScreen
 
 @Composable
 fun TecnicoNavHost(tecnicoDb: TecnicoDb) {
