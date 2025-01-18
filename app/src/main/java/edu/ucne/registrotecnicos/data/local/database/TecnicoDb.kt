@@ -2,8 +2,8 @@ package edu.ucne.registrotecnicos.data.local.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import edu.ucne.registrotecnicos.MainActivity.TecnicosEntity
 import edu.ucne.registrotecnicos.data.local.dao.TecnicosDao
+import edu.ucne.registrotecnicos.data.local.entity.TecnicosEntity
 
 @Database(
     entities = [TecnicosEntity::class],
