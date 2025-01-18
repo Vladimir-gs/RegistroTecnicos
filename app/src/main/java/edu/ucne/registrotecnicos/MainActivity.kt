@@ -236,13 +236,6 @@ class MainActivity : ComponentActivity() {
         tecnicoDb.tecnicoDao().save(tecnico)
     }
 
-    @Entity(tableName = "Tecnicos")
-    data class TecnicosEntity(
-        @PrimaryKey
-        val tecnicosId: Int? = null,
-        val nombre: String = "",
-        val sueldo: Double = 0.0,
-    )
 
 
 }
