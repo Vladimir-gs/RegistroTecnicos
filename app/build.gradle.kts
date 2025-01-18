@@ -13,6 +13,7 @@ android {
     defaultConfig {
         applicationId = "edu.ucne.registrotecnicos"
         minSdk = 24
+        //noinspection OldTargetApi
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
