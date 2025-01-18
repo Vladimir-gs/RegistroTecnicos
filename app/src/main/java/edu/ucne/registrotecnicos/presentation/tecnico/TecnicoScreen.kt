@@ -42,6 +42,7 @@ import kotlinx.coroutines.launch
 fun TecnicoScreen(
     navController: NavController,
     tecnicoDb: TecnicoDb,
+
 ) {
     var nombre by remember { mutableStateOf("") }
     var sueldo by remember { mutableDoubleStateOf(0.0) }
