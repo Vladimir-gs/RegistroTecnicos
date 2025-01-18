@@ -48,6 +48,7 @@ import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.Upsert
+import edu.ucne.registrotecnicos.data.local.database.TecnicoDb
 import edu.ucne.registrotecnicos.ui.theme.RegistroTecnicosTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -265,12 +266,4 @@ class MainActivity : ComponentActivity() {
         fun getAll(): Flow<List<TecnicosEntity>>
     }
 
-    @Database(
-        entities = [TecnicosEntity::class],
-        version = 1,
-        exportSchema = false
-    )
-    abstract class TecnicoDb : RoomDatabase() {
-        abstract fun tecnicoDao(): TecnicosDao
-    }
 }
