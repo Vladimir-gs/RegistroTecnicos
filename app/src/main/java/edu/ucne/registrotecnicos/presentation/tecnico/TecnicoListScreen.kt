@@ -60,6 +60,7 @@ fun TecnicoListScreen(
                 Icon(Icons.Default.Add, contentDescription = "Agregar Técnico")
             }
         }
+
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -72,7 +73,18 @@ fun TecnicoListScreen(
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
-
+            Button(
+                onClick = { navController.navigate("agregarTicket") },
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+            ) {
+                Text("Agregar Ticket")
+            }
+            Button(
+                onClick = { navController.navigate("listaTickets") },
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+            ) {
+                Text("Lista de Ticket")
+            }
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 itemsIndexed(tecnicoList) { index, tecnico ->
                     TecnicoRow(tecnico) {
@@ -156,16 +168,4 @@ private fun TecnicoRow(
             }
         )
     }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun TecnicoListScreenPreview() {
-    val navController = rememberNavController()
-    val tecnicoList = listOf(
-        TecnicosEntity(tecnicosId = 1, nombre = "Técnico 1", sueldo = 2500.0),
-        TecnicosEntity(tecnicosId = 2, nombre = "Técnico 2", sueldo = 3000.0),
-        TecnicosEntity(tecnicosId = 3, nombre = "Técnico 3", sueldo = 3500.0)
-    )
-    TecnicoListScreen(tecnicoList as TecnicoDb, navController)
 }
