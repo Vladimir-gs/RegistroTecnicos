@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
+    id("com.google.dagger.hilt.android")
+    kotlin("plugin.serialization")
 
 }
 
@@ -57,7 +59,7 @@ dependencies {
 
     //navegacion
     implementation("androidx.navigation:navigation-compose:2.8.0-rc01")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+    implementation(libs.kotlin.serialization.json)
 
     //room
     implementation("androidx.room:room-runtime:2.6.1")
@@ -70,6 +72,7 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.51")
     ksp("com.google.dagger:hilt-android-compiler:2.51")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+
 
     //retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
