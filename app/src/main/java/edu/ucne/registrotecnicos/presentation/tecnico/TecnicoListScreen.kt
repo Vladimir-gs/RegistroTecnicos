@@ -6,20 +6,23 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,39 +31,59 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import edu.ucne.registrotecnicos.data.local.database.TecnicoDb
 import edu.ucne.registrotecnicos.data.local.entity.TecnicosEntity
 import java.text.NumberFormat
 import java.util.Locale
 
 @Composable
 fun TecnicoListScreen(
-    tecnicoDb: TecnicoDb,
-    navController: NavController,
+    viewModel: TecnicoViewModel = hiltViewModel(),
+    onCreate: () -> Unit,
+    onDelete: (Int) -> Unit,
+    onEdit: (Int) -> Unit,
+    onBack: () -> Unit,
 ) {
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val tecnicoList by tecnicoDb.tecnicoDao().getAll()
-        .collectAsStateWithLifecycle(
-            initialValue = emptyList<TecnicosEntity>(),
-            lifecycleOwner = lifecycleOwner,
-            minActiveState = Lifecycle.State.STARTED
-        )
-    val tecnicoViewModel = TecnicoViewModel(tecnicoDb)
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    TecnicoBodyListScreen(
+        uiState = uiState,
+        onCreate = onCreate,
+        onDelete = onDelete,
+        onEdit = onEdit,
+        onBack = onBack
+    )
+}
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TecnicoBodyListScreen(
+    uiState: Uistate,
+    onCreate: () -> Unit,
+    onDelete: (Int) -> Unit,
+    onEdit: (Int) -> Unit,
+    onBack: () -> Unit
+
+    ) {
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Lista de Tecnicos") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Regresar")
+
+                    }
+                }
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { navController.navigate("agregarTecnico") }
+                onClick = onCreate
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Agregar Técnico")
+                Icon(Icons.Default.Add, contentDescription = "Agregar Tecnico")
             }
         }
-
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -68,28 +91,15 @@ fun TecnicoListScreen(
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
-            Text(
-                text = "Lista de Técnicos",
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-            Button(
-                onClick = { navController.navigate("agregarTicket") },
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+            LazyColumn(
+                modifier = Modifier.fillMaxSize()
             ) {
-                Text("Agregar Ticket")
-            }
-            Button(
-                onClick = { navController.navigate("listaTickets") },
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
-            ) {
-                Text("Lista de Ticket")
-            }
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                itemsIndexed(tecnicoList) { index, tecnico ->
-                    TecnicoRow(tecnico) {
-                        tecnicoViewModel.deleteTecnico(tecnico)
-                    }
+                items(uiState.tecnicos) { tecnico ->
+                    TecnicoRow(
+                        tecnico = tecnico,
+                        onDelete = onDelete,
+                        onEdit = onEdit
+                    )
                 }
             }
         }
@@ -97,12 +107,12 @@ fun TecnicoListScreen(
 }
 
 @Composable
-private fun TecnicoRow(
+fun TecnicoRow(
     tecnico: TecnicosEntity,
-    onDelete: (TecnicosEntity) -> Unit,
-) {
-    val showDialog = remember { mutableStateOf(false) }
+    onDelete: (Int) -> Unit,
+    onEdit: (Int) -> Unit,
 
+    ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -131,41 +141,44 @@ private fun TecnicoRow(
             )
             Row(modifier = Modifier.weight(0.5f)) {
                 IconButton(
-                    onClick = {},
+                    onClick = { onEdit(tecnico.tecnicosId!!) },
                 ) {
                     Icon(Icons.Filled.Edit, contentDescription = "Editar Técnico")
                 }
                 IconButton(
-                    onClick = { showDialog.value = true },
+                    onClick = { onDelete(tecnico.tecnicosId!!)},
                 ) {
                     Icon(Icons.Filled.Delete, contentDescription = "Eliminar Técnico")
                 }
             }
         }
     }
+}
 
-    if (showDialog.value) {
-        AlertDialog(
-            onDismissRequest = { showDialog.value = false },
-            title = { Text("Confirmar Eliminación") },
-            text = { Text("¿Estás seguro de que deseas eliminar este técnico?") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        onDelete(tecnico)
-                        showDialog.value = false
-                    }
-                ) {
-                    Text("Eliminar")
-                }
-            },
-            dismissButton = {
-                Button(
-                    onClick = { showDialog.value = false }
-                ) {
-                    Text("Cancelar")
-                }
-            }
+
+@Preview(showBackground = true)
+@Composable
+private fun TecnicosListScreenPreview() {
+    val sampleTecnicos = listOf(
+
+        TecnicosEntity(
+            tecnicosId = 1,
+            nombre = "Juan",
+            sueldo = 10000.0,
+
+        ),
+        TecnicosEntity(
+            tecnicosId = 2,
+            nombre = "Miguel",
+            sueldo = 20000.0,
+
         )
-    }
+    )
+    TecnicoBodyListScreen(
+        uiState = Uistate(tecnicos = sampleTecnicos),
+        onCreate = { /* Acción de crear */ },
+        onDelete = { /* Acción de eliminar */ },
+        onEdit = { /* Acción de editar */ },
+        onBack = {}
+    )
 }

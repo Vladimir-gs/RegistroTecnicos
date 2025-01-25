@@ -1,4 +1,4 @@
-package edu.ucne.registrotecnicos.presentation.tecnico
+package edu.ucne.registrotecnicos.presentation.ticket
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,51 +20,66 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-
+import edu.ucne.registrotecnicos.presentation.tecnico.TecnicoViewModel
 
 @Composable
-fun TecnicoScreen(
-    viewModel: TecnicoViewModel = hiltViewModel(),
+fun TicketEditScreen(
+    viewModel: TicketViewModel = hiltViewModel(),
+    ticketId: Int,
     goBack: () -> Unit,
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-    TecnicoBodyScreen(
-        uiState = uiState,
-        onNameChange = viewModel::onNameChange,
-        onSalaryChange = viewModel::onSalaryChange,
+    LaunchedEffect(ticketId) {
+        viewModel.selectedTicket(ticketId)
+    }
+    val uiState = viewModel.uiState.collectAsStateWithLifecycle()
+    TicketBodyEditScreen(
+        uiState = uiState.value,
+        //onFechaChange = viewModel::onFechaChange,
+        onClienteChange = viewModel::onClienteChange,
+        onAsuntoChange = viewModel::onAsuntoChange,
+        onDescripcionChange = viewModel::onDescripcionChange,
+        onTecnicoChange = viewModel::onTecnicoChange,
+        onPrioridadChange = viewModel::onPrioridadChange,
         onSave = viewModel::save,
         goBack = goBack
     )
 }
 
-@Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun TecnicoBodyScreen(
-    uiState: Uistate,
-    onNameChange: (String) -> Unit,
-    onSalaryChange: (Double) -> Unit,
+@Composable
+fun TicketBodyEditScreen(
+    uiState: UiState,
+    //onFechaChange: (Date) -> Unit,
+    onClienteChange: (String) -> Unit,
+    onAsuntoChange: (String) -> Unit,
+    onTecnicoChange: (Int) -> Unit,
+    onDescripcionChange: (String) -> Unit,
+    onPrioridadChange: (Int) -> Unit,
     onSave: () -> Unit,
     goBack: () -> Unit,
 ) {
+    //val dateFormatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    //val formattedDate = uiState.fecha?.let { dateFormatter.format(it) } ?: ""
+
+    //var showDatePicker by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Agregar Técnico") },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color(red = 102, green = 79, blue = 163, alpha = 255), // Cambia el color de fondo
-                    titleContentColor = Color.White // Cambia el color del texto del título
-                )
+                title = { Text("Editar Ticket") },
             )
         }
     ) { innerPadding ->
@@ -74,33 +89,63 @@ fun TecnicoBodyScreen(
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
+            // Campo de cliente
             OutlinedTextField(
-                label = { Text(text = "Nombre") },
-                value = uiState.nombre,
-                onValueChange = { newValue ->
-                    onNameChange(newValue.replaceFirstChar {
-                        if (it.isLowerCase()) it.titlecase() else it.toString()
-                    })
-                },
+                label = { Text(text = "Cliente") },
+                value = uiState.cliente,
+                onValueChange = onClienteChange,
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Campo de asunto
             OutlinedTextField(
-                label = { Text("Sueldo") },
-                value = uiState.sueldo.toString(),
+                label = { Text(text = "Asunto") },
+                value = uiState.asunto,
+                onValueChange = onAsuntoChange,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Campo de descripción
+            OutlinedTextField(
+                label = { Text(text = "Descripción") },
+                value = uiState.descripcion,
+                onValueChange = onDescripcionChange,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Campo de técnico (ID)
+            OutlinedTextField(
+                label = { Text("Id Tecnico") },
+                value = uiState.tecnicoId.toString(),
                 onValueChange = { newValue ->
-                    val salary = newValue.toDoubleOrNull() ?: 0.0
-                    onSalaryChange(salary)
+                    val tecnico = newValue.toIntOrNull() ?: 0
+                    onTecnicoChange(tecnico)
                 },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             )
 
-//                    sueldo = it.toDoubleOrNull() ?: 0.0
-//                    sueldoText = it
-//                    sueldo = it.replace(",", "").toDoubleOrNull() ?: 0.0
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                label = { Text("Prioridad") },
+                value = uiState.prioridadId.toString(),
+                onValueChange = { newValue ->
+                    val prioridad = newValue.toIntOrNull() ?: 0
+                    onPrioridadChange(prioridad)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             uiState.errorMessage?.let {
                 Text(text = it, color = Color.Red)
             }
@@ -127,6 +172,7 @@ fun TecnicoBodyScreen(
                     modifier = Modifier.padding(15.dp),
                     onClick = {
                         onSave()
+                        goBack()
                     },
                 ) {
                     Icon(
@@ -136,25 +182,9 @@ fun TecnicoBodyScreen(
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(text = "Guardar")
                 }
-            }
 
+            }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun TecnicoBodyScreenPreview() {
-    TecnicoBodyScreen(
-        uiState = Uistate(
-            nombre = "Juan Pérez",
-            sueldo = 2500.0,
-            errorMessage = null
-        ),
-        onNameChange = {},
-        onSalaryChange = {},
-        onSave = {},
-        goBack = {}
-    )
 }
 
