@@ -2,8 +2,6 @@ package edu.ucne.registrotecnicos.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.time.LocalDate
-import java.util.Date
 
 @Entity(tableName = "Tickets")
 data class TicketsEntity(
