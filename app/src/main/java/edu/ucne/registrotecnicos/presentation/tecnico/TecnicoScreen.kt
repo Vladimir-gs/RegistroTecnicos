@@ -1,6 +1,8 @@
 package edu.ucne.registrotecnicos.presentation.tecnico
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,52 +14,57 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableDoubleStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import edu.ucne.registrotecnicos.data.local.database.TecnicoDb
-import edu.ucne.registrotecnicos.data.local.entity.TecnicosEntity
-import kotlinx.coroutines.launch
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TecnicoScreen(
-    navController: NavController,
-    tecnicoDb: TecnicoDb,
-
+    viewModel: TecnicoViewModel = hiltViewModel(),
+    goBack: () -> Unit,
 ) {
-    var nombre by remember { mutableStateOf("") }
-    var sueldo by remember { mutableDoubleStateOf(0.0) }
-    var sueldoText by remember { mutableStateOf("") }
-    var errorMessage: String? by remember { mutableStateOf(null) }
-    val scope = rememberCoroutineScope()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    TecnicoBodyScreen(
+        uiState = uiState,
+        onNameChange = viewModel::onNameChange,
+        onSalaryChange = viewModel::onSalaryChange,
+        onSave = viewModel::save,
+        goBack = goBack
+    )
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+fun TecnicoBodyScreen(
+    uiState: Uistate,
+    onNameChange: (String) -> Unit,
+    onSalaryChange: (Double) -> Unit,
+    onSave: () -> Unit,
+    goBack: () -> Unit,
+) {
     Scaffold(
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 title = { Text("Agregar Técnico") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Regresar")
-                    }
-                }
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color(red = 102, green = 79, blue = 163, alpha = 255), // Cambia el color de fondo
+                    titleContentColor = Color.White // Cambia el color del texto del título
+                )
             )
         }
     ) { innerPadding ->
@@ -69,11 +76,11 @@ fun TecnicoScreen(
         ) {
             OutlinedTextField(
                 label = { Text(text = "Nombre") },
-                value = nombre,
-                onValueChange = {
-                    nombre = it.replaceFirstChar { char ->
-                        if (char.isLowerCase()) char.titlecase() else char.toString()
-                    }
+                value = uiState.nombre,
+                onValueChange = { newValue ->
+                    onNameChange(newValue.replaceFirstChar {
+                        if (it.isLowerCase()) it.titlecase() else it.toString()
+                    })
                 },
                 modifier = Modifier.fillMaxWidth()
             )
@@ -82,46 +89,72 @@ fun TecnicoScreen(
 
             OutlinedTextField(
                 label = { Text("Sueldo") },
-                value = sueldoText,
-                onValueChange = {
-                    sueldoText = it
-                    sueldo = it.replace(",", "").toDoubleOrNull() ?: 0.0
+                value = uiState.sueldo.toString(),
+                onValueChange = { newValue ->
+                    val salary = newValue.toDoubleOrNull() ?: 0.0
+                    onSalaryChange(salary)
                 },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             )
 
-            errorMessage?.let {
+//                    sueldo = it.toDoubleOrNull() ?: 0.0
+//                    sueldoText = it
+//                    sueldo = it.replace(",", "").toDoubleOrNull() ?: 0.0
+            uiState.errorMessage?.let {
                 Text(text = it, color = Color.Red)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = {
-                    if (nombre.isBlank()) {
-                        errorMessage = "El nombre no puede estar vacío"
-                    } else {
-                        scope.launch {
-                            tecnicoDb.tecnicoDao().save(
-                                TecnicosEntity(
-                                    nombre = nombre,
-                                    sueldo = sueldo
-                                )
-                            )
-                            navController.navigateUp()
-                        }
-                    }
-                },
-                modifier = Modifier.fillMaxWidth()
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Guardar"
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "Guardar")
+                Button(
+                    modifier = Modifier.padding(15.dp),
+                    onClick = {
+                        goBack()
+                    },
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Volver"
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = "Volver")
+                }
+                Button(
+                    modifier = Modifier.padding(15.dp),
+                    onClick = {
+                        onSave()
+                    },
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Guardar"
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = "Guardar")
+                }
             }
+
         }
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun TecnicoBodyScreenPreview() {
+    TecnicoBodyScreen(
+        uiState = Uistate(
+            nombre = "Juan Pérez",
+            sueldo = 2500.0,
+            errorMessage = null
+        ),
+        onNameChange = {},
+        onSalaryChange = {},
+        onSave = {},
+        goBack = {}
+    )
+}
+
