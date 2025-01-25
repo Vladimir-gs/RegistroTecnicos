@@ -4,22 +4,29 @@ import edu.ucne.registrotecnicos.data.local.database.TecnicoDb
 
 import android.content.Context
 import androidx.room.Room
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
-object TecnicoDbProvider {
-    private var db: TecnicoDb? = null
-
-    fun getInstance(context: Context): TecnicoDb {
-        return db ?: synchronized(this) {
-            db ?: buildDatabase(context).also { db = it }
-        }
-    }
-
-    private fun buildDatabase(context: Context): TecnicoDb {
-        return Room.databaseBuilder(
-            context.applicationContext,
+@InstallIn(SingletonComponent::class)
+@Module
+object AppModule {
+    @Provides
+    @Singleton
+    fun provideDb(@ApplicationContext appContext: Context) =
+        Room.databaseBuilder(
+            appContext,
             TecnicoDb::class.java,
             "Ticket.db"
         ).fallbackToDestructiveMigration()
             .build()
-    }
+    @Provides
+    @Singleton
+    fun provideTicketDao(tecnicoDb: TecnicoDb) = tecnicoDb.ticketDao()
+    @Provides
+    @Singleton
+    fun provideTecnicoDao(tecnicoDb: TecnicoDb) = tecnicoDb.tecnicoDao()
 }
