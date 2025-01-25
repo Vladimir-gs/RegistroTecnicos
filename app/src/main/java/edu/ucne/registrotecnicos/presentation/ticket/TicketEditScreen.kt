@@ -1,6 +1,8 @@
 package edu.ucne.registrotecnicos.presentation.ticket
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +17,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -29,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -119,20 +124,6 @@ fun TicketBodyEditScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Campo de técnico (ID)
-            OutlinedTextField(
-                label = { Text("Id Tecnico") },
-                value = uiState.tecnicoId.toString(),
-                onValueChange = { newValue ->
-                    val tecnico = newValue.toIntOrNull() ?: 0
-                    onTecnicoChange(tecnico)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
             OutlinedTextField(
                 label = { Text("Prioridad") },
                 value = uiState.prioridadId.toString(),
@@ -143,6 +134,41 @@ fun TicketBodyEditScreen(
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Box(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { expanded = true },
+                    label = { Text("Tecnico") },
+                    value = uiState.tecnicos.firstOrNull { it.tecnicosId == uiState.tecnicoId }?.nombre
+                        ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null,
+                            modifier = Modifier.clickable { expanded = true }
+                        )
+                    }
+                )
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    uiState.tecnicos.forEach { tecnico ->
+                        DropdownMenuItem(
+                            text = { Text(tecnico.nombre) },
+                            onClick = {
+                                onTecnicoChange(tecnico.tecnicosId ?: 0)
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -187,4 +213,26 @@ fun TicketBodyEditScreen(
         }
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun TicketBodyEditScreenPreview() {
+    TicketBodyEditScreen(
+        uiState = UiState(
+            cliente = "Juan Pérez",
+            asunto = "Reparación urgente",
+            descripcion = "El equipo no enciende",
+            tecnicoId = 1,
+            prioridadId = 2
+        ),
+        onClienteChange = {},
+        onAsuntoChange = {},
+        onDescripcionChange = {},
+        onPrioridadChange = {},
+        onTecnicoChange = {},
+        onSave = {},
+        goBack = {}
+    )
+}
+
 

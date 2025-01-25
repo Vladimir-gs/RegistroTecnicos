@@ -1,5 +1,6 @@
 package edu.ucne.registrotecnicos.presentation.ticket
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -168,5 +169,6 @@ fun UiState.toEntity() = TicketsEntity(
     prioridad = prioridadId,
     cliente = cliente,
     asunto = asunto,
-    descripcion = descripcion
+    descripcion = descripcion,
+    tecnicoId = tecnicoId
 )

@@ -40,6 +40,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import edu.ucne.registrotecnicos.data.local.database.TecnicoDb
+import edu.ucne.registrotecnicos.data.local.entity.TecnicosEntity
 import edu.ucne.registrotecnicos.data.local.entity.TicketsEntity
 import edu.ucne.registrotecnicos.presentation.navigation.Screen
 import edu.ucne.registrotecnicos.presentation.tecnico.TecnicoBodyScreen
@@ -104,7 +105,7 @@ fun TicketBodyListScreen(
                 items(uiState.tickets) { ticket ->
                     TicketRow(
                         ticket = ticket,
-                        //prioridades = uiState.prioridades,
+                        tecnicos = uiState.tecnicos,
                         onEditTicket = onEdit,
                         onDeleteTicket = onDelete
                     )
@@ -117,10 +118,13 @@ fun TicketBodyListScreen(
 @Composable
 private fun TicketRow(
     ticket: TicketsEntity,
-    //prioridades: List<PrioridadEntity>,
+    tecnicos: List<TecnicosEntity>,
     onEditTicket: (Int) -> Unit,
     onDeleteTicket: (Int) -> Unit,
 ) {
+    val nombreTecnico = tecnicos.find { tecnico ->
+        tecnico.tecnicosId == ticket.tecnicoId
+    }?.nombre ?: "Sin Tecnico"
 
     Card(
         modifier = Modifier
@@ -153,7 +157,7 @@ private fun TicketRow(
                     modifier = Modifier.padding(bottom = 2.dp)
                 )
                 Text(
-                    text = "Prioridad: ${ticket.prioridad.toString()}",
+                    text = "Prioridad: ${ticket.prioridad}",
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.padding(bottom = 2.dp)
                 )
@@ -163,7 +167,7 @@ private fun TicketRow(
                     modifier = Modifier.padding(bottom = 2.dp)
                 )
                 Text(
-                    text = "Técnico: ${ticket.tecnicoId}",
+                    text = "Técnico: $nombreTecnico",
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.padding(bottom = 2.dp)
                 )
