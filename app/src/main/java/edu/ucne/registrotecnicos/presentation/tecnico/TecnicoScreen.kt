@@ -62,8 +62,8 @@ fun TecnicoBodyScreen(
             CenterAlignedTopAppBar(
                 title = { Text("Agregar Técnico") },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color(red = 102, green = 79, blue = 163, alpha = 255), // Cambia el color de fondo
-                    titleContentColor = Color.White // Cambia el color del texto del título
+                    containerColor = Color(red = 102, green = 79, blue = 163, alpha = 255),
+                    titleContentColor = Color.White
                 )
             )
         }
