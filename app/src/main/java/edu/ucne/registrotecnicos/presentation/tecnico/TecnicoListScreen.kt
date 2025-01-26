@@ -23,12 +23,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -69,9 +71,13 @@ private fun TecnicoBodyListScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Lista de Tecnicos") },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color(red = 102, green = 79, blue = 163, alpha = 255),
+                    titleContentColor = Color.White
+                ),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Regresar")
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Regresar", tint = Color.White)
 
                     }
                 }
@@ -176,9 +182,9 @@ private fun TecnicosListScreenPreview() {
     )
     TecnicoBodyListScreen(
         uiState = Uistate(tecnicos = sampleTecnicos),
-        onCreate = { /* Acción de crear */ },
-        onDelete = { /* Acción de eliminar */ },
-        onEdit = { /* Acción de editar */ },
+        onCreate = {  },
+        onDelete = {  },
+        onEdit = {  },
         onBack = {}
     )
 }
