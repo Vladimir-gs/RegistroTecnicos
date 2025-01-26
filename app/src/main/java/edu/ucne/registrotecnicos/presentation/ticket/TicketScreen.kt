@@ -15,6 +15,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
@@ -24,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,17 +33,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
+import edu.ucne.registrotecnicos.presentation.navigation.Screen
 
 
 @Composable
 fun TicketScreen(
     viewModel: TicketViewModel = hiltViewModel(),
     goBack: () -> Unit,
+    navController: NavHostController,
 
     ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -54,7 +61,8 @@ fun TicketScreen(
         onTecnicoChange = viewModel::onTecnicoChange,
         onPrioridadChange = viewModel::onPrioridadChange,
         onSave = viewModel::save,
-        goBack = goBack
+        goBack = goBack,
+        navController = navController
     )
 
 }
@@ -72,6 +80,7 @@ fun TicketBodyScreen(
     onPrioridadChange: (Int) -> Unit,
     onSave: () -> Unit,
     goBack: () -> Unit,
+    navController: NavHostController,
 ) {
     //val dateFormatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     //val formattedDate = uiState.fecha?.let { dateFormatter.format(it) } ?: ""
@@ -81,8 +90,18 @@ fun TicketBodyScreen(
 
     Scaffold(
         topBar = {
+
             CenterAlignedTopAppBar(
-                title = { Text("Agregar Ticket") },
+
+                title = {
+                    Text(
+                        "Agregar Ticket"
+                    )
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color(red = 102, green = 79, blue = 163, alpha = 255),
+                    titleContentColor = Color.White
+                )
             )
         }
     ) { innerPadding ->
@@ -92,7 +111,6 @@ fun TicketBodyScreen(
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
-            // Campo de cliente
             OutlinedTextField(
                 label = { Text(text = "Cliente") },
                 value = uiState.cliente,
@@ -102,7 +120,6 @@ fun TicketBodyScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Campo de asunto
             OutlinedTextField(
                 label = { Text(text = "Asunto") },
                 value = uiState.asunto,
@@ -112,7 +129,6 @@ fun TicketBodyScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Campo de descripción
             OutlinedTextField(
                 label = { Text(text = "Descripción") },
                 value = uiState.descripcion,
@@ -205,6 +221,22 @@ fun TicketBodyScreen(
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(text = "Guardar")
                 }
+
+            }
+            Spacer(modifier = Modifier.weight(1f)) // Esto empuja el siguiente botón hacia abajo
+
+            Button(
+                modifier = Modifier.padding(15.dp).fillMaxWidth(),
+                onClick = {
+                    navController.navigate(Screen.MensajeScreen)
+                },
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Email,
+                    contentDescription = "Mensajes"
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = "Mensajes")
             }
         }
     }
@@ -227,6 +259,7 @@ private fun TicketBodyScreenPreview() {
         onPrioridadChange = {},
         onTecnicoChange = {},
         onSave = {},
-        goBack = {}
+        goBack = {},
+        navController = NavHostController(LocalContext.current)
     )
 }

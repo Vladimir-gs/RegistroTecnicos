@@ -24,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,7 +52,7 @@ fun TicketListScreen(
     onCreate: () -> Unit,
     onDelete: (Int) -> Unit,
     onEdit: (Int) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     TicketBodyListScreen(
@@ -70,15 +71,23 @@ fun TicketBodyListScreen(
     onCreate: () -> Unit,
     onDelete: (Int) -> Unit,
     onEdit: (Int) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Lista de Tickets") },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color(red = 102, green = 79, blue = 163, alpha = 255),
+                    titleContentColor = Color.White
+                ),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Regresar")
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Regresar",
+                            tint = Color.White
+                        )
                     }
                 }
             )
@@ -216,7 +225,7 @@ private fun TicketListScreenPreview() {
     TicketBodyListScreen(
         uiState = UiState(tickets = sampleTickets),
         onCreate = { },
-        onDelete = {  },
+        onDelete = { },
         onBack = {},
         onEdit = { }
     )

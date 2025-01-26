@@ -29,4 +29,7 @@ object AppModule {
     @Provides
     @Singleton
     fun provideTecnicoDao(tecnicoDb: TecnicoDb) = tecnicoDb.tecnicoDao()
+    @Provides
+    @Singleton
+    fun provideMensajeDao(tecnicoDb: TecnicoDb) = tecnicoDb.mensajeDao()
 }

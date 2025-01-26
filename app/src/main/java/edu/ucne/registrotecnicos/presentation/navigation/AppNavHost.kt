@@ -1,11 +1,14 @@
 package edu.ucne.registrotecnicos.presentation.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import edu.ucne.registrotecnicos.presentation.home.HomeScreen
+import edu.ucne.registrotecnicos.presentation.mensaje.MensajeScreen
 import edu.ucne.registrotecnicos.presentation.tecnico.TecnicoDeleteScreen
 import edu.ucne.registrotecnicos.presentation.tecnico.TecnicoEditScreen
 import edu.ucne.registrotecnicos.presentation.tecnico.TecnicoListScreen
@@ -15,6 +18,7 @@ import edu.ucne.registrotecnicos.presentation.ticket.TicketListScreen
 import edu.ucne.registrotecnicos.presentation.ticket.TicketScreen
 import edu.ucne.registrotecnicos.presentation.ticket.TicketeDeleteScreen
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNavHost(
     navController: NavHostController,
@@ -70,7 +74,9 @@ fun AppNavHost(
         }
         composable<Screen.Ticket> {
             TicketScreen(
-                goBack = { navController.navigateUp() }
+                goBack = { navController.navigateUp() },
+                navController = navController
+
             )
         }
 
@@ -86,6 +92,13 @@ fun AppNavHost(
             TicketEditScreen(
                 ticketId = args.TicketId,
                 goBack = { navController.navigateUp() }
+            )
+        }
+
+        //Mensajes
+        composable<Screen.MensajeScreen> { backStackEntry ->
+            MensajeScreen(
+                goBack = { navController.navigateUp() },
             )
         }
     }

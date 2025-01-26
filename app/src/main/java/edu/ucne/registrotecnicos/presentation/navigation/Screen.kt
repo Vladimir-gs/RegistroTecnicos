@@ -31,5 +31,6 @@ sealed class Screen {
     @Serializable
     data class TicketEdit(val TicketId: Int) : Screen()
 
-
+    @Serializable
+    data object MensajeScreen: Screen()
 }

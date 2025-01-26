@@ -24,6 +24,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -85,6 +86,10 @@ fun TicketBodyEditScreen(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text("Editar Ticket") },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color(red = 102, green = 79, blue = 163, alpha = 255),
+                    titleContentColor = Color.White
+                )
             )
         }
     ) { innerPadding ->
@@ -94,7 +99,7 @@ fun TicketBodyEditScreen(
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
-            // Campo de cliente
+
             OutlinedTextField(
                 label = { Text(text = "Cliente") },
                 value = uiState.cliente,
@@ -104,7 +109,6 @@ fun TicketBodyEditScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Campo de asunto
             OutlinedTextField(
                 label = { Text(text = "Asunto") },
                 value = uiState.asunto,
@@ -114,7 +118,6 @@ fun TicketBodyEditScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Campo de descripción
             OutlinedTextField(
                 label = { Text(text = "Descripción") },
                 value = uiState.descripcion,

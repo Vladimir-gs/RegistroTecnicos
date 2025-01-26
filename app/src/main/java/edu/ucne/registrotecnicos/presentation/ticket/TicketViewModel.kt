@@ -1,6 +1,5 @@
 package edu.ucne.registrotecnicos.presentation.ticket
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,7 +11,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
@@ -134,7 +132,7 @@ class TicketViewModel @Inject constructor(
         }
     }
 
-//    fun onFechaChange(fecha: Date) {
+    //    fun onFechaChange(fecha: Date) {
 //        _uiState.update {
 //            it.copy(fecha = fecha, errorMessage = null)
 //        }
@@ -145,6 +143,7 @@ class TicketViewModel @Inject constructor(
             it.copy(prioridadId = prioridadId, errorMessage = null)
         }
     }
+
     fun onTecnicoChange(tecnicoId: Int) {
         _uiState.update {
             it.copy(tecnicoId = tecnicoId, errorMessage = null)
