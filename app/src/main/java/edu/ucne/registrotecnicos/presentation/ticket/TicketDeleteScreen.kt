@@ -30,14 +30,17 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.ucne.registrotecnicos.presentation.tecnico.TecnicoDeleteBodyScreen
 import edu.ucne.registrotecnicos.presentation.tecnico.Uistate
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun TicketeDeleteScreen(
     viewModel: TicketViewModel = hiltViewModel(),
     ticketId: Int,
-    goBack: () -> Unit
-){
-    LaunchedEffect(ticketId){
+    goBack: () -> Unit,
+) {
+    LaunchedEffect(ticketId) {
         viewModel.selectedTicket(ticketId)
     }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -52,15 +55,18 @@ fun TicketeDeleteScreen(
 fun TicketDeleteBodyScreen(
     uiState: UiState,
     onDeleteTicket: () -> Unit,
-    goBack: () -> Unit){
-    Scaffold(){
-        innerPadding ->
+    goBack: () -> Unit,
+) {
+    val dateFormatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    val formattedDate = uiState.fecha?.let { dateFormatter.format(it) } ?: ""
+
+    Scaffold { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(16.dp)
-        ){
+        ) {
             Text(
                 text = "¿Seguro que deseas eliminar?",
                 style = MaterialTheme.typography.headlineSmall,
@@ -78,6 +84,7 @@ fun TicketDeleteBodyScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
+
                     Text(
                         text = "Eliminar",
                         style = MaterialTheme.typography.headlineSmall,
@@ -86,7 +93,7 @@ fun TicketDeleteBodyScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Fecha: ",
+                        text = "Fecha: ${formattedDate}",
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -175,6 +182,7 @@ fun TicketDeleteBodyScreen(
 private fun TicketDeleteScreenPreview() {
     val fakeUiState = UiState(
         cliente = "Juan Pérez",
+        fecha = Date(),
         asunto = "Problema con el sistema",
         prioridadId = 2,
         tecnicoId = 3,

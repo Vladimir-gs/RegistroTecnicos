@@ -29,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,6 +46,8 @@ import edu.ucne.registrotecnicos.data.local.entity.TecnicosEntity
 import edu.ucne.registrotecnicos.data.local.entity.TicketsEntity
 import edu.ucne.registrotecnicos.presentation.navigation.Screen
 import edu.ucne.registrotecnicos.presentation.tecnico.TecnicoBodyScreen
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @Composable
 fun TicketListScreen(
@@ -131,6 +134,9 @@ private fun TicketRow(
     onEditTicket: (Int) -> Unit,
     onDeleteTicket: (Int) -> Unit,
 ) {
+    var expanded by remember { mutableStateOf(false) }
+    val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+
     val nombreTecnico = tecnicos.find { tecnico ->
         tecnico.tecnicosId == ticket.tecnicoId
     }?.nombre ?: "Sin Tecnico"
@@ -151,7 +157,7 @@ private fun TicketRow(
                     .weight(1f)
             ) {
                 Text(
-                    text = "Fecha: ",
+                    text = "Fecha: ${ticket.fecha?.let { dateFormat.format(it) }}",
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.padding(bottom = 2.dp)
                 )
@@ -189,12 +195,12 @@ private fun TicketRow(
                 IconButton(
                     onClick = { onEditTicket(ticket.ticketId!!) },
                 ) {
-                    Icon(Icons.Filled.Edit, contentDescription = "Editar Ticket")
+                    Icon(Icons.Filled.Edit, contentDescription = "Editar Ticket", tint = Color.Blue)
                 }
                 IconButton(
                     onClick = { onDeleteTicket(ticket.ticketId!!) },
                 ) {
-                    Icon(Icons.Filled.Delete, contentDescription = "Eliminar Ticket")
+                    Icon(Icons.Filled.Delete, contentDescription = "Eliminar Ticket",tint = Color.Red)
                 }
             }
         }

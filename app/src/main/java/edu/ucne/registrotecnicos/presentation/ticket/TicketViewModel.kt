@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
@@ -45,7 +46,7 @@ class TicketViewModel @Inject constructor(
             _uiState.value.descripcion.isBlank() -> "La descripción no puede estar vacía"
             _uiState.value.tecnicoId == 0 -> "El técnico no puede estar vacío"
             _uiState.value.prioridadId == 0 -> "La prioridad no puede estar vacía"
-            //_uiState.value.fecha == null -> "La fecha no puede estar vacía"
+            _uiState.value.fecha == null -> "La fecha no puede estar vacía"
             else -> null
         }
     }
@@ -54,6 +55,7 @@ class TicketViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 ticketId = null,
+                fecha = Date(),
                 cliente = "",
                 asunto = "",
                 descripcion = "",
@@ -71,6 +73,7 @@ class TicketViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         ticketId = ticket?.ticketId,
+                        fecha = ticket?.fecha,
                         prioridadId = ticket?.prioridad ?: 0,
                         cliente = ticket?.cliente ?: "",
                         asunto = ticket?.asunto ?: "",
@@ -132,12 +135,12 @@ class TicketViewModel @Inject constructor(
         }
     }
 
-    //    fun onFechaChange(fecha: Date) {
-//        _uiState.update {
-//            it.copy(fecha = fecha, errorMessage = null)
-//        }
-//    }
-//
+        fun onFechaChange(fecha: Date) {
+        _uiState.update {
+            it.copy(fecha = fecha, errorMessage = null)
+        }
+    }
+
     fun onPrioridadChange(prioridadId: Int) {
         _uiState.update {
             it.copy(prioridadId = prioridadId, errorMessage = null)
@@ -153,6 +156,7 @@ class TicketViewModel @Inject constructor(
 
 data class UiState(
     val ticketId: Int? = null,
+    val fecha: Date? = null,
     val prioridadId: Int = 0,
     val cliente: String = "",
     val asunto: String = "",
@@ -166,6 +170,7 @@ data class UiState(
 fun UiState.toEntity() = TicketsEntity(
     ticketId = ticketId,
     prioridad = prioridadId,
+    fecha = fecha,
     cliente = cliente,
     asunto = asunto,
     descripcion = descripcion,

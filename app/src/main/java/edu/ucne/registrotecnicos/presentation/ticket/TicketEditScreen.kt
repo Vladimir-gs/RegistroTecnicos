@@ -39,6 +39,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.ucne.registrotecnicos.presentation.tecnico.TecnicoViewModel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun TicketEditScreen(
@@ -52,7 +55,7 @@ fun TicketEditScreen(
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
     TicketBodyEditScreen(
         uiState = uiState.value,
-        //onFechaChange = viewModel::onFechaChange,
+        onFechaChange = viewModel::onFechaChange,
         onClienteChange = viewModel::onClienteChange,
         onAsuntoChange = viewModel::onAsuntoChange,
         onDescripcionChange = viewModel::onDescripcionChange,
@@ -67,7 +70,7 @@ fun TicketEditScreen(
 @Composable
 fun TicketBodyEditScreen(
     uiState: UiState,
-    //onFechaChange: (Date) -> Unit,
+    onFechaChange: (Date) -> Unit,
     onClienteChange: (String) -> Unit,
     onAsuntoChange: (String) -> Unit,
     onTecnicoChange: (Int) -> Unit,
@@ -76,8 +79,8 @@ fun TicketBodyEditScreen(
     onSave: () -> Unit,
     goBack: () -> Unit,
 ) {
-    //val dateFormatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-    //val formattedDate = uiState.fecha?.let { dateFormatter.format(it) } ?: ""
+    val dateFormatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    val formattedDate = uiState.fecha?.let { dateFormatter.format(it) } ?: ""
 
     //var showDatePicker by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
@@ -99,6 +102,21 @@ fun TicketBodyEditScreen(
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
+            OutlinedTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                label = { Text("Fecha") },
+                value = formattedDate,
+                readOnly = true,
+                onValueChange = { newValue ->
+                    val newDate = dateFormatter.parse(newValue)
+                    if (newDate != null) {
+                        onFechaChange(newDate)
+                    }
+                },
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+            )
 
             OutlinedTextField(
                 label = { Text(text = "Cliente") },
@@ -234,7 +252,8 @@ private fun TicketBodyEditScreenPreview() {
         onPrioridadChange = {},
         onTecnicoChange = {},
         onSave = {},
-        goBack = {}
+        goBack = {},
+        onFechaChange = {}
     )
 }
 

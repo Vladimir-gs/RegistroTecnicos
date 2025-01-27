@@ -265,8 +265,9 @@ fun MensajeRow(
 @Composable
 private fun MensajeBodyScreenPreview() {
     val sampleTecnicos = listOf(
-        TecnicosEntity(tecnicosId = 1, nombre = "Juan Pérez"),
+        TecnicosEntity(tecnicosId = 1, nombre = "Enel"),
         TecnicosEntity(tecnicosId = 2, nombre = "Ana López"),
+        TecnicosEntity(tecnicosId = 3, nombre = "Vladimir Guzman"),
     )
 
     val sampleMensajes = listOf(
@@ -279,6 +280,12 @@ private fun MensajeBodyScreenPreview() {
         MensajeEntity(
             mensajeId = 2,
             mensaje = "Todo bien, gracias. ¿Y tú?",
+            fecha = "2025-01-25",
+            tecnicoId = 2
+        ),
+        MensajeEntity(
+            mensajeId = 2,
+            mensaje = "Termine tarde, pero termine la tarea que s lo importante 👍👍",
             fecha = "2025-01-25",
             tecnicoId = 2
         ),

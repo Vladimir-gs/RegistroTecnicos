@@ -149,12 +149,12 @@ fun TecnicoRow(
                 IconButton(
                     onClick = { onEdit(tecnico.tecnicosId!!) },
                 ) {
-                    Icon(Icons.Filled.Edit, contentDescription = "Editar Técnico")
+                    Icon(Icons.Filled.Edit, contentDescription = "Editar Técnico", tint = Color.Blue)
                 }
                 IconButton(
                     onClick = { onDelete(tecnico.tecnicosId!!)},
                 ) {
-                    Icon(Icons.Filled.Delete, contentDescription = "Eliminar Técnico")
+                    Icon(Icons.Filled.Delete, contentDescription = "Eliminar Técnico", tint = Color.Red)
                 }
             }
         }
