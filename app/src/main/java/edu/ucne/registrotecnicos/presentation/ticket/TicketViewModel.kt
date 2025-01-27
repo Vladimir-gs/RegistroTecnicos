@@ -27,6 +27,31 @@ class TicketViewModel @Inject constructor(
         getTecnicos()
     }
 
+    fun onSearchQueryChange(query: String) {
+        _uiState.update { it.copy(searchQuery = query) }
+        filterTickets()
+    }
+
+    private fun filterTickets() {
+        viewModelScope.launch {
+            ticketRepository.getAll().collect { tickets ->
+                val filteredTickets = if (_uiState.value.searchQuery.isBlank()) {
+                    tickets
+                } else {
+                    tickets.filter { ticket ->
+                        ticket.cliente.contains(_uiState.value.searchQuery, ignoreCase = true) ||
+                                ticket.asunto.contains(_uiState.value.searchQuery, ignoreCase = true) ||
+                                ticket.descripcion.contains(_uiState.value.searchQuery, ignoreCase = true)
+                    }
+                }
+                _uiState.update {
+                    it.copy(tickets = filteredTickets)
+
+                }
+            }
+        }
+    }
+
     fun save() {
         viewModelScope.launch {
             val errorMessage = validate()
@@ -165,6 +190,7 @@ data class UiState(
     val errorMessage: String? = null,
     val tickets: List<TicketsEntity> = emptyList(),
     val tecnicos: List<TecnicosEntity> = emptyList(),
+    val searchQuery: String = ""
 )
 
 fun UiState.toEntity() = TicketsEntity(
@@ -174,5 +200,5 @@ fun UiState.toEntity() = TicketsEntity(
     cliente = cliente,
     asunto = asunto,
     descripcion = descripcion,
-    tecnicoId = tecnicoId
+    tecnicoId = tecnicoId,
 )

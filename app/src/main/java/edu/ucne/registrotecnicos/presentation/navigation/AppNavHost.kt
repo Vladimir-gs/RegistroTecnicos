@@ -63,13 +63,14 @@ fun AppNavHost(
                 goBack = { navController.navigateUp() }
             )
         }
-        //Ticket
+
         composable<Screen.TicketList> {
             TicketListScreen(
                 onCreate = { navController.navigate(Screen.Ticket(0)) },
                 onDelete = { navController.navigate(Screen.TicketDelete(it)) },
                 onEdit = { navController.navigate(Screen.TicketEdit(it)) },
-                onBack = { navController.navigateUp() }
+                onBack = { navController.navigateUp() },
+
             )
         }
         composable<Screen.Ticket> {

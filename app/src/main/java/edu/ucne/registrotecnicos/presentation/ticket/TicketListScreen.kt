@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -21,6 +22,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -40,6 +42,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import edu.ucne.registrotecnicos.data.local.database.TecnicoDb
 import edu.ucne.registrotecnicos.data.local.entity.TecnicosEntity
@@ -63,7 +66,9 @@ fun TicketListScreen(
         onCreate = onCreate,
         onDelete = onDelete,
         onEdit = onEdit,
-        onBack = onBack
+        onBack = onBack,
+        onSearchQueryChange = viewModel::onSearchQueryChange
+
     )
 }
 
@@ -75,6 +80,7 @@ fun TicketBodyListScreen(
     onDelete: (Int) -> Unit,
     onEdit: (Int) -> Unit,
     onBack: () -> Unit,
+    onSearchQueryChange: (String) -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -109,6 +115,22 @@ fun TicketBodyListScreen(
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
+            OutlinedTextField(
+                value = uiState.searchQuery,
+                onValueChange = onSearchQueryChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                placeholder = { Text("Buscar tickets...") },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Buscar"
+                    )
+                },
+                singleLine = true
+            )
+
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -217,7 +239,7 @@ private fun TicketListScreenPreview() {
             asunto = "Aire",
             descripcion = "BHablalba",
             prioridad = 1,
-            tecnicoId = 101
+            tecnicoId = 101,
         ),
         TicketsEntity(
             ticketId = 2,
@@ -233,6 +255,7 @@ private fun TicketListScreenPreview() {
         onCreate = { },
         onDelete = { },
         onBack = {},
-        onEdit = { }
+        onEdit = { },
+        onSearchQueryChange = { }
     )
 }
