@@ -1,10 +1,13 @@
 package edu.ucne.registrotecnicos.presentation.tecnico
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -12,9 +15,12 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -28,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -119,6 +126,8 @@ fun TecnicoRow(
     onEdit: (Int) -> Unit,
 
     ) {
+    var expanded by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -128,35 +137,67 @@ fun TecnicoRow(
             modifier = Modifier
                 .padding(10.dp)
                 .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = tecnico.tecnicosId.toString(),
-                modifier = Modifier.weight(0.2f),
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(1f)
             )
             Text(
                 text = tecnico.nombre,
-                modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(1f)
             )
             Text(
                 text = NumberFormat.getCurrencyInstance(Locale.US).format(tecnico.sueldo),
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.weight(0.5f)
+                modifier = Modifier.weight(1f)
             )
-            Row(modifier = Modifier.weight(0.5f)) {
-                IconButton(
-                    onClick = { onEdit(tecnico.tecnicosId!!) },
-                ) {
-                    Icon(Icons.Filled.Edit, contentDescription = "Editar Técnico", tint = Color.Blue)
-                }
-                IconButton(
-                    onClick = { onDelete(tecnico.tecnicosId!!)},
-                ) {
-                    Icon(Icons.Filled.Delete, contentDescription = "Eliminar Técnico", tint = Color.Red)
-                }
+            IconButton(
+                onClick = { expanded = !expanded },
+            ) {
+                Icon(Icons.Filled.MoreVert, contentDescription = "Opciones", tint = Color.Blue)
             }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+
+            ) {
+                DropdownMenuItem(
+                    text = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(Icons.Filled.Edit, contentDescription = "Editar")
+                            Spacer(modifier = Modifier.width(2.dp))
+                            Text("Editar")
+                        }
+                    },
+                    onClick = {
+                        onEdit(tecnico.tecnicosId!!)
+                        expanded = false
+                    }
+                )
+                DropdownMenuItem(
+                    text = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(Icons.Filled.Delete, contentDescription = "Eliminar")
+                            Spacer(modifier = Modifier.width(2.dp))
+                            Text("Eliminar")
+                        }
+                    },
+                    onClick = {
+                        onDelete(tecnico.tecnicosId!!)
+                        expanded = false
+                    }
+                )
+            }
+
         }
     }
 }
