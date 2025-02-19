@@ -1,21 +1,24 @@
 package edu.ucne.registrotecnicos.presentation.ticket
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -33,19 +36,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import edu.ucne.registrotecnicos.data.local.database.TecnicoDb
 import edu.ucne.registrotecnicos.data.local.entity.TecnicosEntity
 import edu.ucne.registrotecnicos.data.local.entity.TicketsEntity
-import edu.ucne.registrotecnicos.presentation.navigation.Screen
-import edu.ucne.registrotecnicos.presentation.tecnico.TecnicoBodyScreen
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -112,7 +108,6 @@ fun TicketBodyListScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(bottom = 56.dp)
             ) {
                 items(uiState.tickets) { ticket ->
                     TicketRow(
@@ -159,32 +154,26 @@ private fun TicketRow(
                 Text(
                     text = "Fecha: ${ticket.fecha?.let { dateFormat.format(it) }}",
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(bottom = 2.dp)
                 )
                 Text(
                     text = "Nombre: ${ticket.cliente}",
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(bottom = 2.dp)
                 )
                 Text(
                     text = "Asunto: ${ticket.asunto}",
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(bottom = 2.dp)
                 )
                 Text(
                     text = "Prioridad: ${ticket.prioridad}",
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(bottom = 2.dp)
                 )
                 Text(
                     text = "Descripción: ${ticket.descripcion}",
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(bottom = 2.dp)
                 )
                 Text(
                     text = "Técnico: $nombreTecnico",
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(bottom = 2.dp)
                 )
             }
             Column(
@@ -193,19 +182,53 @@ private fun TicketRow(
                     .align(Alignment.CenterVertically)
             ) {
                 IconButton(
-                    onClick = { onEditTicket(ticket.ticketId!!) },
+                    onClick = { expanded = !expanded },
                 ) {
-                    Icon(Icons.Filled.Edit, contentDescription = "Editar Ticket", tint = Color.Blue)
+                    Icon(Icons.Filled.MoreVert, contentDescription = "Opciones", tint = Color.Blue)
                 }
-                IconButton(
-                    onClick = { onDeleteTicket(ticket.ticketId!!) },
+
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
                 ) {
-                    Icon(Icons.Filled.Delete, contentDescription = "Eliminar Ticket",tint = Color.Red)
+                    DropdownMenuItem(
+                        text = {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(Icons.Filled.Edit, contentDescription = "Editar")
+                                Spacer(modifier = Modifier.width(2.dp))
+                                Text("Editar")
+                            }
+                        },
+                        onClick = {
+                            onEditTicket(ticket.ticketId!!)
+                            expanded = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(Icons.Filled.Delete, contentDescription = "Eliminar")
+                                Spacer(modifier = Modifier.width(2.dp))
+                                Text("Eliminar")
+                            }
+                        },
+                        onClick = {
+                            onDeleteTicket(ticket.ticketId!!)
+                            expanded = false
+                        }
+                    )
                 }
             }
         }
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable
