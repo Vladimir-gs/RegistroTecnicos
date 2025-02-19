@@ -1,6 +1,7 @@
 package edu.ucne.registrotecnicos.presentation.home
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -38,12 +39,13 @@ fun HomeScreen(
             )
         }
     ) { innerPadding ->
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(innerPadding),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+
         )
         {
             Button(
@@ -69,6 +71,19 @@ fun HomeScreen(
                 )
                 Text(
                     text = "Tickets",
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
+            Button(
+                modifier = Modifier.padding(15.dp),
+                onClick = { navController.navigate(Screen.ApiList) }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Api Ticket"
+                )
+                Text(
+                    text = "Api Tickets",
                     modifier = Modifier.padding(8.dp)
                 )
             }
