@@ -1,8 +1,7 @@
-package edu.ucne.registrotecnicos.presentation.ticket
+package edu.ucne.registrotecnicos.presentation.ticketApi
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,11 +14,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -40,22 +36,18 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import edu.ucne.registrotecnicos.presentation.navigation.Screen
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-
 @Composable
-fun TicketScreen(
-    viewModel: TicketViewModel = hiltViewModel(),
+fun ApiScreen(
+    viewModel: TicketApiViewModel = hiltViewModel(),
     goBack: () -> Unit,
-    navController: NavHostController,
-
-    ) {
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    TicketBodyScreen(
+    ApiBodyScreen(
         uiState = uiState,
         onFechaChange = viewModel::onFechaChange,
         onClienteChange = viewModel::onClienteChange,
@@ -65,15 +57,13 @@ fun TicketScreen(
         onPrioridadChange = viewModel::onPrioridadChange,
         onSave = viewModel::save,
         goBack = goBack,
-        navController = navController
     )
-
 }
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TicketBodyScreen(
+fun ApiBodyScreen(
     uiState: UiState,
     onFechaChange: (Date) -> Unit,
     onClienteChange: (String) -> Unit,
@@ -83,23 +73,19 @@ fun TicketBodyScreen(
     onPrioridadChange: (Int) -> Unit,
     onSave: () -> Unit,
     goBack: () -> Unit,
-    navController: NavHostController,
-) {
+){
     val dateFormatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     val formattedDate = uiState.fecha?.let { dateFormatter.format(it) } ?: ""
     val context = LocalContext.current
 
     var showDatePicker by remember { mutableStateOf(false) }
-    var expanded by remember { mutableStateOf(false) }
-
     Scaffold(
         topBar = {
-
             CenterAlignedTopAppBar(
 
                 title = {
                     Text(
-                        "Agregar Ticket"
+                        "Crear Ticket"
                     )
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -108,14 +94,14 @@ fun TicketBodyScreen(
                 )
             )
         }
-    ) { innerPadding ->
+    ){innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(16.dp)
-        ) {
 
+        ){
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -152,20 +138,10 @@ fun TicketBodyScreen(
                 datePicker.show()
             }
             Spacer(modifier = Modifier.height(8.dp))
-
             OutlinedTextField(
                 label = { Text(text = "Cliente") },
                 value = uiState.cliente,
                 onValueChange = onClienteChange,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                label = { Text(text = "Asunto") },
-                value = uiState.asunto,
-                onValueChange = onAsuntoChange,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -191,42 +167,24 @@ fun TicketBodyScreen(
             )
 
             Spacer(modifier = Modifier.height(8.dp))
-
-            Box(modifier = Modifier.fillMaxWidth()) {
-                OutlinedTextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { expanded = true },
-                    label = { Text("Tecnico") },
-                    value = uiState.tecnicos.firstOrNull { it.tecnicosId == uiState.tecnicoId }?.nombre
-                        ?: "",
-                    onValueChange = {},
-                    readOnly = true,
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = null,
-                            modifier = Modifier.clickable { expanded = true }
-                        )
-                    }
-                )
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
-                    uiState.tecnicos.forEach { tecnico ->
-                        DropdownMenuItem(
-                            text = { Text(tecnico.nombre) },
-                            onClick = {
-                                onTecnicoChange(tecnico.tecnicosId ?: 0)
-                                expanded = false
-                            }
-                        )
-                    }
-                }
-            }
+            OutlinedTextField(
+                label = { Text(text = "Asunto") },
+                value = uiState.asunto,
+                onValueChange = onAsuntoChange,
+                modifier = Modifier.fillMaxWidth()
+            )
 
             Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                label = { Text("Tecnico") },
+                value = uiState.tecnicoId.toString(),
+                onValueChange = { newValue ->
+                    val tecnico = newValue.toIntOrNull() ?: 0
+                    onTecnicoChange(tecnico)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            )
 
             uiState.errorMessage?.let {
                 Text(text = it, color = Color.Red)
@@ -263,31 +221,16 @@ fun TicketBodyScreen(
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(text = "Guardar")
                 }
-
-            }
-            Spacer(modifier = Modifier.weight(1f)) // Esto empuja el siguiente botón hacia abajo
-
-            Button(
-                modifier = Modifier.padding(15.dp).fillMaxWidth(),
-                onClick = {
-                    navController.navigate(Screen.MensajeScreen)
-                },
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Email,
-                    contentDescription = "Mensajes"
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "Mensajes")
             }
         }
     }
+
 }
 
 @Preview(showBackground = true)
 @Composable
-private fun TicketBodyScreenPreview() {
-    TicketBodyScreen(
+private fun ApiPreview() {
+    ApiBodyScreen(
         uiState = UiState(
             cliente = "Juan Pérez",
             fecha = Date(),
@@ -304,6 +247,5 @@ private fun TicketBodyScreenPreview() {
         onSave = {},
         goBack = {},
         onFechaChange = {},
-        navController = NavHostController(LocalContext.current)
     )
 }

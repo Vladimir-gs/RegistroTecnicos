@@ -33,4 +33,10 @@ sealed class Screen {
 
     @Serializable
     data object MensajeScreen: Screen()
+
+    @Serializable
+    data object ApiList: Screen()
+
+    @Serializable
+    data class Api(val ApiId: Int): Screen()
 }

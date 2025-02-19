@@ -1,24 +1,29 @@
-package edu.ucne.registrotecnicos.presentation.ticket
+package edu.ucne.registrotecnicos.presentation.ticketApi
 
-import androidx.compose.foundation.layout.Arrangement
+import android.widget.Toast
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -29,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,46 +42,72 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import edu.ucne.registrotecnicos.data.local.entity.TecnicosEntity
-import edu.ucne.registrotecnicos.data.local.entity.TicketsEntity
+import androidx.navigation.NavController
+import edu.ucne.registrotecnicos.data.remoto.dto.TicketDto
+import edu.ucne.registrotecnicos.presentation.navigation.Screen
 import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
+import kotlin.Int
 
 @Composable
-fun TicketListScreen(
-    viewModel: TicketViewModel = hiltViewModel(),
+fun ApiListScreen(
+    viewModel: TicketApiViewModel = hiltViewModel(),
+    drawerState: DrawerState,
     onCreate: () -> Unit,
     onDelete: (Int) -> Unit,
     onEdit: (Int) -> Unit,
     onBack: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    TicketBodyListScreen(
+    val context = LocalContext.current
+
+    //Con esto mostramos un mensaje si hay algun error
+    LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let { error ->
+            Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    //y con esto cargamos la lista de tickets
+    LaunchedEffect(Unit) {
+        viewModel.getTickets()
+    }
+
+    ApiListBodyScreen(
         uiState = uiState,
+        drawerState = drawerState,
         onCreate = onCreate,
         onDelete = onDelete,
         onEdit = onEdit,
-        onBack = onBack
+        onBack = onBack,
+        refresh = { viewModel.getTickets() }
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TicketBodyListScreen(
+fun ApiListBodyScreen(
     uiState: UiState,
+    drawerState: DrawerState,
     onCreate: () -> Unit,
     onDelete: (Int) -> Unit,
     onEdit: (Int) -> Unit,
     onBack: () -> Unit,
+    refresh: () -> Unit,
 ) {
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Lista de Tickets") },
+                title = { Text("Lista Api") },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Color(red = 102, green = 79, blue = 163, alpha = 255),
                     titleContentColor = Color.White
@@ -93,48 +125,61 @@ fun TicketBodyListScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = onCreate
+                onClick = onCreate,
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Agregar Ticket")
             }
         }
     ) { innerPadding ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp)
         ) {
-            LazyColumn(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(16.dp)
             ) {
-                items(uiState.tickets) { ticket ->
-                    TicketRow(
-                        ticket = ticket,
-                        tecnicos = uiState.tecnicos,
-                        onEditTicket = onEdit,
-                        onDeleteTicket = onDelete
-                    )
+                IconButton(
+                    onClick = {
+                        refresh()
+                    },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Icon(Icons.Filled.Refresh, contentDescription = "Recargar", tint = Color.Blue)
                 }
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
+                    items(uiState.tickets) {
+                        ApiRow(
+                            ticket = it,
+                            onEditTicket = onEdit,
+                            onDeleteTicket = onDelete
+                        )
+                    }
+                }
+            }
+            if (uiState.isloading) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(16.dp)
+                )
             }
         }
     }
 }
 
 @Composable
-private fun TicketRow(
-    ticket: TicketsEntity,
-    tecnicos: List<TecnicosEntity>,
+private fun ApiRow(
+    ticket: TicketDto,
     onEditTicket: (Int) -> Unit,
     onDeleteTicket: (Int) -> Unit,
 ) {
-    var expanded by remember { mutableStateOf(false) }
     val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-
-    val nombreTecnico = tecnicos.find { tecnico ->
-        tecnico.tecnicosId == ticket.tecnicoId
-    }?.nombre ?: "Sin Tecnico"
 
     Card(
         modifier = Modifier
@@ -172,90 +217,49 @@ private fun TicketRow(
                     style = MaterialTheme.typography.bodyLarge,
                 )
                 Text(
-                    text = "Técnico: $nombreTecnico",
+                    text = "Técnico: ${ticket.tecnicoId}",
                     style = MaterialTheme.typography.bodyLarge,
                 )
             }
-            Column(
-                modifier = Modifier
-                    .padding(start = 16.dp)
-                    .align(Alignment.CenterVertically)
+            IconButton(
+                onClick = { },
             ) {
-                IconButton(
-                    onClick = { expanded = !expanded },
-                ) {
-                    Icon(Icons.Filled.MoreVert, contentDescription = "Opciones", tint = Color.Blue)
-                }
-
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
-                    DropdownMenuItem(
-                        text = {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Icon(Icons.Filled.Edit, contentDescription = "Editar")
-                                Spacer(modifier = Modifier.width(2.dp))
-                                Text("Editar")
-                            }
-                        },
-                        onClick = {
-                            onEditTicket(ticket.ticketId!!)
-                            expanded = false
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Icon(Icons.Filled.Delete, contentDescription = "Eliminar")
-                                Spacer(modifier = Modifier.width(2.dp))
-                                Text("Eliminar")
-                            }
-                        },
-                        onClick = {
-                            onDeleteTicket(ticket.ticketId!!)
-                            expanded = false
-                        }
-                    )
-                }
+                Icon(Icons.Filled.MoreVert, contentDescription = "opciones", tint = Color.Blue)
             }
         }
     }
 }
 
-
 @Preview(showBackground = true)
 @Composable
-private fun TicketListScreenPreview() {
-    val sampleTickets = listOf(
-        TicketsEntity(
+fun ApiListPreview() {
+    val apiTickets = listOf(
+        TicketDto(
             ticketId = 1,
             cliente = "Juan",
+            fecha = null,
             asunto = "Aire",
             descripcion = "BHablalba",
             prioridad = 1,
             tecnicoId = 101
         ),
-        TicketsEntity(
+        TicketDto(
             ticketId = 2,
             cliente = "Miguel",
+            fecha = null,
             asunto = "Carro",
             descripcion = "Describir todo aca",
             prioridad = 2,
             tecnicoId = 102
         )
     )
-    TicketBodyListScreen(
-        uiState = UiState(tickets = sampleTickets),
+    ApiListBodyScreen(
+        uiState = UiState(tickets = apiTickets),
         onCreate = { },
         onDelete = { },
         onBack = {},
-        onEdit = { }
+        onEdit = { },
+        drawerState = DrawerState(DrawerValue.Closed),
+        refresh = { }
     )
 }

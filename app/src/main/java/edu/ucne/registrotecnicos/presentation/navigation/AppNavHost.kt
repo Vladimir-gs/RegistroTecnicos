@@ -2,6 +2,8 @@ package edu.ucne.registrotecnicos.presentation.navigation
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -17,16 +19,21 @@ import edu.ucne.registrotecnicos.presentation.ticket.TicketEditScreen
 import edu.ucne.registrotecnicos.presentation.ticket.TicketListScreen
 import edu.ucne.registrotecnicos.presentation.ticket.TicketScreen
 import edu.ucne.registrotecnicos.presentation.ticket.TicketeDeleteScreen
+import edu.ucne.registrotecnicos.presentation.ticketApi.ApiListScreen
+import edu.ucne.registrotecnicos.presentation.ticketApi.ApiScreen
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNavHost(
     navController: NavHostController,
 ) {
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+
     NavHost(
         navController = navController,
         startDestination = Screen.HomeScreen
     ) {
+
         //Home
         composable<Screen.HomeScreen> {
             HomeScreen(
@@ -72,6 +79,7 @@ fun AppNavHost(
                 onBack = { navController.navigateUp() }
             )
         }
+
         composable<Screen.Ticket> {
             TicketScreen(
                 goBack = { navController.navigateUp() },
@@ -98,6 +106,23 @@ fun AppNavHost(
         //Mensajes
         composable<Screen.MensajeScreen> { backStackEntry ->
             MensajeScreen(
+                goBack = { navController.navigateUp() },
+            )
+        }
+
+        //Api
+        composable<Screen.ApiList> {
+            ApiListScreen(
+                onCreate = { navController.navigate(Screen.Api(0)) },
+                onDelete = { navController.navigate(Screen.Api(it)) },
+                onEdit = { navController.navigate(Screen.Api(it)) },
+                onBack = { navController.navigateUp() },
+                drawerState = drawerState
+            )
+        }
+
+        composable<Screen.Api> {
+            ApiScreen(
                 goBack = { navController.navigateUp() },
             )
         }
