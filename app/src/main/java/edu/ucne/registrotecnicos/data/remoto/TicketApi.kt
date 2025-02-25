@@ -26,6 +26,6 @@ interface TicketApi {
         @Body ticket: TicketDto
     ): TicketDto
 
-    @DELETE("api/tickets")
+    @DELETE("api/tickets/{id}")
     suspend fun deleteTicket(@Path("id") id: Int): Response<Void?>
 }
