@@ -57,6 +57,27 @@ class TicketViewModel @Inject constructor(
         }
     }
 
+    fun edit () {
+        viewModelScope.launch {
+            val errorMessage = validate()
+            if (errorMessage != null) {
+                _uiState.update { it.copy(errorMessage = errorMessage) }
+            } else {
+                val ticket = _uiState.value.toEntity()
+                // Guardamos primero en local
+                ticketRepository.save(ticket)
+
+                try{
+                    apiRepository.updateTicket(ticket.ticketId ?: 0, ticket.toTicketDto())
+                } catch (e: Exception) {
+                    _uiState.update {
+                        it.copy(errorMessage = "Ticket editado localmente. Sincronización pendiente: ${e.message}")
+                    }
+                }
+            }
+        }
+    }
+
     private fun validate(): String? {
         return when {
             _uiState.value.cliente.isBlank() -> "El nombre del cliente no puede estar vacío"
@@ -142,6 +163,7 @@ class TicketViewModel @Inject constructor(
 
     private fun getTickets() {
         viewModelScope.launch {
+            // Primero obtenemos los tickets locales para mostrarlos inmediatamente
             launch {
                 ticketRepository.getAll().collect { localTickets ->
                     _uiState.update {
@@ -150,22 +172,38 @@ class TicketViewModel @Inject constructor(
                 }
             }
 
+            // Luego sincronizamos con la API
             launch {
                 apiRepository.getAllTickets().collect { result ->
                     when (result) {
-                        is Resource.Suceess -> {
+                        is Resource.Suceess -> { // Nota: corrige esto a Resource.Success
+                            // Mantenemos un mapa de IDs para verificar después
+                            val existingTickets = mutableMapOf<Int, TicketsEntity>()
+
+                            // Obtenemos todos los tickets locales una sola vez para comparar
+                            _uiState.value.tickets.forEach { ticket ->
+                                ticket.ticketId?.let { id ->
+                                    existingTickets[id] = ticket
+                                }
+                            }
+
                             result.data?.forEach { ticketDto ->
-                                ticketRepository.save(
-                                    TicketsEntity(
-                                        ticketId = ticketDto.ticketId,
-                                        fecha = ticketDto.fecha,
-                                        cliente = ticketDto.cliente,
-                                        asunto = ticketDto.asunto,
-                                        descripcion = ticketDto.descripcion,
-                                        prioridad = ticketDto.prioridad,
-                                        tecnicoId = ticketDto.tecnicoId
+                                // Usamos el Upsert que ya tienes implementado
+                                // Pero evitamos duplicados verificando la existencia
+                                if (ticketDto.ticketId !in existingTickets.keys ||
+                                    hasChanges(existingTickets[ticketDto.ticketId], ticketDto)) {
+                                    ticketRepository.save(
+                                        TicketsEntity(
+                                            ticketId = ticketDto.ticketId,
+                                            fecha = ticketDto.fecha,
+                                            cliente = ticketDto.cliente,
+                                            asunto = ticketDto.asunto,
+                                            descripcion = ticketDto.descripcion,
+                                            prioridad = ticketDto.prioridad,
+                                            tecnicoId = ticketDto.tecnicoId
+                                        )
                                     )
-                                )
+                                }
                             }
                         }
                         is Resource.Error -> {
@@ -178,6 +216,17 @@ class TicketViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    // Función auxiliar para verificar si hay cambios entre el ticket local y el de la API
+    private fun hasChanges(localTicket: TicketsEntity?, apiTicket: TicketDto): Boolean {
+        if (localTicket == null) return true
+
+        return localTicket.cliente != apiTicket.cliente ||
+                localTicket.asunto != apiTicket.asunto ||
+                localTicket.descripcion != apiTicket.descripcion ||
+                localTicket.prioridad != apiTicket.prioridad ||
+                localTicket.tecnicoId != apiTicket.tecnicoId
     }
 
     private fun getTecnicos() {

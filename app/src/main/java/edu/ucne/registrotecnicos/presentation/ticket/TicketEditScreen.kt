@@ -38,7 +38,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import edu.ucne.registrotecnicos.presentation.tecnico.TecnicoViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -61,7 +60,7 @@ fun TicketEditScreen(
         onDescripcionChange = viewModel::onDescripcionChange,
         onTecnicoChange = viewModel::onTecnicoChange,
         onPrioridadChange = viewModel::onPrioridadChange,
-        onSave = viewModel::save,
+        onEdit = viewModel::edit,
         goBack = goBack
     )
 }
@@ -76,7 +75,7 @@ fun TicketBodyEditScreen(
     onTecnicoChange: (Int) -> Unit,
     onDescripcionChange: (String) -> Unit,
     onPrioridadChange: (Int) -> Unit,
-    onSave: () -> Unit,
+    onEdit: () -> Unit,
     goBack: () -> Unit,
 ) {
     val dateFormatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
@@ -218,7 +217,7 @@ fun TicketBodyEditScreen(
                 Button(
                     modifier = Modifier.padding(15.dp),
                     onClick = {
-                        onSave()
+                        onEdit()
                         goBack()
                     },
                 ) {
@@ -251,7 +250,7 @@ private fun TicketBodyEditScreenPreview() {
         onDescripcionChange = {},
         onPrioridadChange = {},
         onTecnicoChange = {},
-        onSave = {},
+        onEdit = {},
         goBack = {},
         onFechaChange = {}
     )
