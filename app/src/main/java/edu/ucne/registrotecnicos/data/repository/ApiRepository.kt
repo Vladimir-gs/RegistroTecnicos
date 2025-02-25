@@ -33,5 +33,18 @@ class ApiRepository @Inject constructor(
 
     suspend fun saveTicket(ticketDto: TicketDto) = dataSource.saveTicket(ticketDto)
 
-    suspend fun deleteTicket(id: Int) = dataSource.deleteTicket(id)
+    suspend fun deleteTicket(id: Int): Resource<Boolean> {
+        return try {
+            dataSource.deleteTicket(id)
+            Resource.Suceess(true)
+        } catch (e: HttpException) {
+            val errorMessage = e.response()?.errorBody()?.string() ?: e.message()
+            Log.e("ApiRepository", "HttpException: $errorMessage")
+            Resource.Error("Error de conexión $errorMessage")
+        } catch (e: Exception) {
+            Log.e("ApiRepository", "Exception: ${e.message}")
+            Resource.Error("Error: ${e.message}")
+        }
+    }
+
 }
