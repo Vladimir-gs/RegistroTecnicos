@@ -1,16 +1,21 @@
 package edu.ucne.registrotecnicos.presentation.ticket
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.ucne.registrotecnicos.data.local.entity.TecnicosEntity
 import edu.ucne.registrotecnicos.data.local.entity.TicketsEntity
+import edu.ucne.registrotecnicos.data.remoto.Resource
+import edu.ucne.registrotecnicos.data.remoto.dto.TicketDto
+import edu.ucne.registrotecnicos.data.repository.ApiRepository
 import edu.ucne.registrotecnicos.data.repository.TecnicoRepository
 import edu.ucne.registrotecnicos.data.repository.TicketRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 import java.util.Date
 import javax.inject.Inject
 
@@ -18,6 +23,7 @@ import javax.inject.Inject
 class TicketViewModel @Inject constructor(
     private val ticketRepository: TicketRepository,
     private val tecnicoRepository: TecnicoRepository,
+    private val apiRepository: ApiRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(UiState())
     val uiState = _uiState.asStateFlow()
@@ -33,7 +39,19 @@ class TicketViewModel @Inject constructor(
             if (errorMessage != null) {
                 _uiState.update { it.copy(errorMessage = errorMessage) }
             } else {
-                ticketRepository.save(_uiState.value.toEntity())
+                val ticket = _uiState.value.toEntity()
+                // Guardamos primero en local
+                ticketRepository.save(ticket)
+
+                // Intentamos guardar en la API
+                try {
+                    apiRepository.saveTicket(ticket.toTicketDto())
+                } catch (e: Exception) {
+                    _uiState.update {
+                        it.copy(errorMessage = "Ticket guardado localmente. Sincronización pendiente: ${e.message}")
+                    }
+                }
+
                 nuevo()
             }
         }
@@ -87,15 +105,76 @@ class TicketViewModel @Inject constructor(
 
     fun delete() {
         viewModelScope.launch {
-            ticketRepository.delete(_uiState.value.toEntity())
+            val ticket = _uiState.value.toEntity()
+            val ticketId = ticket.ticketId ?: return@launch
+
+            try {
+                // Aqui eliino local
+                ticketRepository.delete(ticket)
+
+                // aqui en la API
+                try {
+                    Log.d("TicketViewModel", "Intentando eliminar ticket $ticketId de la API")
+                    apiRepository.deleteTicket(ticketId)
+                    Log.d("TicketViewModel", "Ticket $ticketId eliminado de la API con éxito")
+                } catch (e: HttpException) {
+                    val errorMessage = e.response()?.errorBody()?.string() ?: e.message()
+                    Log.e("TicketViewModel", "HttpException al eliminar de API: $errorMessage")
+                    _uiState.update {
+                        it.copy(errorMessage = "Ticket eliminado localmente, error al eliminar de API: $errorMessage")
+                    }
+                } catch (e: Exception) {
+                    Log.e("TicketViewModel", "Error al eliminar de API: ${e.message}")
+                    _uiState.update {
+                        it.copy(errorMessage = "Ticket eliminado localmente, error al eliminar de API: ${e.message}")
+                    }
+                }
+
+            } catch (e: Exception) {
+                Log.e("TicketViewModel", "Error al eliminar localmente: ${e.message}")
+                _uiState.update {
+                    it.copy(errorMessage = "Error al eliminar el ticket: ${e.message}")
+                }
+            }
         }
     }
 
+
     private fun getTickets() {
         viewModelScope.launch {
-            ticketRepository.getAll().collect { tickets ->
-                _uiState.update {
-                    it.copy(tickets = tickets)
+            launch {
+                ticketRepository.getAll().collect { localTickets ->
+                    _uiState.update {
+                        it.copy(tickets = localTickets)
+                    }
+                }
+            }
+
+            launch {
+                apiRepository.getAllTickets().collect { result ->
+                    when (result) {
+                        is Resource.Suceess -> {
+                            result.data?.forEach { ticketDto ->
+                                ticketRepository.save(
+                                    TicketsEntity(
+                                        ticketId = ticketDto.ticketId,
+                                        fecha = ticketDto.fecha,
+                                        cliente = ticketDto.cliente,
+                                        asunto = ticketDto.asunto,
+                                        descripcion = ticketDto.descripcion,
+                                        prioridad = ticketDto.prioridad,
+                                        tecnicoId = ticketDto.tecnicoId
+                                    )
+                                )
+                            }
+                        }
+                        is Resource.Error -> {
+                            _uiState.update { it.copy(errorMessage = result.message) }
+                        }
+                        is Resource.Loading -> {
+                            _uiState.update { it.copy(isLoading = true) }
+                        }
+                    }
                 }
             }
         }
@@ -163,8 +242,19 @@ data class UiState(
     val descripcion: String = "",
     val tecnicoId: Int = 0,
     val errorMessage: String? = null,
+    val isLoading: Boolean = false,
     val tickets: List<TicketsEntity> = emptyList(),
     val tecnicos: List<TecnicosEntity> = emptyList(),
+)
+
+fun TicketsEntity.toTicketDto() = TicketDto(
+    ticketId = ticketId ?: 0,
+    fecha = fecha,
+    cliente = cliente,
+    asunto = asunto,
+    descripcion = descripcion,
+    prioridad = prioridad,
+    tecnicoId = tecnicoId
 )
 
 fun UiState.toEntity() = TicketsEntity(
